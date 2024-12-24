@@ -255,3 +255,19 @@
   margin: 0;
   font-size: 2rem;
 }
+
+/* Add or modify the main container styles */
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.App {
+  text-align: center;
+  padding: 2rem;
+  max-width: 800px; /* Adjust this value based on your preferred width */
+  margin: 0 auto;
+}
