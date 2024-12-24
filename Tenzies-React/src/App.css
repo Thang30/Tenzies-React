@@ -153,3 +153,90 @@
   0% { transform: translateY(0); }
   100% { transform: translateY(-10px); }
 }
+
+.win-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.win-message {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  text-align: center;
+  animation: scaleIn 0.5s ease-out;
+  box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+}
+
+.win-message h2 {
+  color: #2B283A;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.win-message p {
+  color: #4A4E74;
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.new-game-button {
+  background: #59E391;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 5px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.new-game-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(89, 227, 145, 0.3);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { 
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Enhance existing winner animations */
+.die.winner {
+  animation: celebrate 0.7s ease infinite alternate;
+  background-color: #59E391;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(89, 227, 145, 0.7);
+}
+
+@keyframes celebrate {
+  0% { 
+    transform: scale(1.05) rotate(-3deg);
+    box-shadow: 0 0 20px rgba(89, 227, 145, 0.7);
+  }
+  100% { 
+    transform: scale(1.1) rotate(3deg);
+    box-shadow: 0 0 30px rgba(89, 227, 145, 0.9);
+  }
+}

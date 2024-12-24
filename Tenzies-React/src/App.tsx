@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
+import Confetti from 'react-confetti'
 import { Die } from './components/Die'
 import './App.css'
 
@@ -27,6 +28,24 @@ export function App() {
     isWon: false,
     targetValue: null
   })
+
+  const [windowSize, setWindowSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  })
+
+  // Update window size for confetti
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      })
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const generateNewValue = (): number => Math.ceil(Math.random() * 6)
 
@@ -109,6 +128,29 @@ export function App() {
 
   return (
     <div className="app">
+      {gameState.isWon && (
+        <>
+          <Confetti
+            width={windowSize.width}
+            height={windowSize.height}
+            recycle={false}
+            numberOfPieces={200}
+            gravity={0.3}
+          />
+          <div className="win-overlay">
+            <div className="win-message">
+              <h2>🎉 Congratulations! 🎉</h2>
+              <p>You've won the game!</p>
+              <button 
+                className="new-game-button"
+                onClick={startNewGame}
+              >
+                Play Again
+              </button>
+            </div>
+          </div>
+        </>
+      )}
       <h1>Tenzies</h1>
       {gameState.targetValue && (
         <p className="target-value">
@@ -138,11 +180,6 @@ export function App() {
             ? 'Rolling...' 
             : 'Roll'}
       </button>
-      {gameState.isWon && (
-        <div className="win-message">
-          🎉 Congratulations! You won! 🎉
-        </div>
-      )}
     </div>
   )
 }
