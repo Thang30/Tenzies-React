@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import Confetti from 'react-confetti'
+import { nanoid } from 'nanoid'
 import { Die } from './components/Die'
 import './App.css'
 
@@ -18,7 +19,7 @@ interface GameState {
 export function App() {
   const [dice, setDice] = useState<DieState[]>(() => {
     const initialDice = Array.from({ length: 10 }, () => ({
-      id: crypto.randomUUID(),
+      id: nanoid(),
       value: Math.ceil(Math.random() * 6),
       isFrozen: false
     }))
@@ -125,7 +126,7 @@ export function App() {
 
     setDice(prevDice => 
       prevDice.map(() => ({
-        id: crypto.randomUUID(),
+        id: nanoid(),
         value: Math.ceil(Math.random() * 6),
         isFrozen: false
       }))
