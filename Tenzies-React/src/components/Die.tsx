@@ -11,6 +11,9 @@ export const Die: FC<DieProps> = ({ value, isFrozen, onClick }) => {
     <div 
       className={`die ${isFrozen ? 'frozen' : ''}`}
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      aria-pressed={isFrozen}
     >
       {value}
     </div>
