@@ -8,6 +8,11 @@ interface DieState {
   isFrozen: boolean
 }
 
+interface GameState {
+  isWon: boolean
+  targetValue: number | null
+}
+
 export function App() {
   const [dice, setDice] = useState<DieState[]>(() => {
     const initialDice = Array.from({ length: 10 }, () => ({
@@ -18,26 +23,51 @@ export function App() {
     return initialDice
   })
   const [isRolling, setIsRolling] = useState(false)
+  const [gameState, setGameState] = useState<GameState>({
+    isWon: false,
+    targetValue: null
+  })
 
   const generateNewValue = (): number => Math.ceil(Math.random() * 6)
 
-  const handleDieClick = useCallback((id: string) => {
+  // Check for win condition
+  useEffect(() => {
     if (isRolling) return
-    setDice(prevDice => 
-      prevDice.map(die => 
+
+    const allFrozen = dice.every(die => die.isFrozen)
+    const firstValue = dice[0].value
+    const allSameValue = dice.every(die => die.value === firstValue)
+
+    if (allFrozen && allSameValue) {
+      setGameState(prev => ({ ...prev, isWon: true }))
+    }
+  }, [dice, isRolling])
+
+  const handleDieClick = useCallback((id: string) => {
+    if (isRolling || gameState.isWon) return
+    
+    setDice(prevDice => {
+      const clickedDie = prevDice.find(die => die.id === id)
+      if (!clickedDie) return prevDice
+
+      // If this is the first frozen die, set it as the target value
+      if (!gameState.targetValue && !clickedDie.isFrozen) {
+        setGameState(prev => ({ ...prev, targetValue: clickedDie.value }))
+      }
+
+      return prevDice.map(die => 
         die.id === id 
           ? { ...die, isFrozen: !die.isFrozen }
           : die
       )
-    )
-  }, [isRolling])
+    })
+  }, [isRolling, gameState.isWon, gameState.targetValue])
 
   const rollDice = useCallback(() => {
-    if (isRolling) return // Prevent multiple rolls while animation is playing
+    if (isRolling || gameState.isWon) return
 
     setIsRolling(true)
     
-    // Create intermediate values for rolling animation
     const rollInterval = setInterval(() => {
       setDice(prevDice =>
         prevDice.map(die =>
@@ -46,9 +76,8 @@ export function App() {
             : { ...die, value: generateNewValue() }
         )
       )
-    }, 50) // Roll animation speed
+    }, 50)
 
-    // Stop rolling and set final values
     setTimeout(() => {
       clearInterval(rollInterval)
       setDice(prevDice =>
@@ -59,20 +88,33 @@ export function App() {
         )
       )
       setIsRolling(false)
-    }, 500) // Total roll duration
+    }, 500)
 
-    // Cleanup function
     return () => clearInterval(rollInterval)
-  }, [isRolling])
+  }, [isRolling, gameState.isWon])
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => setIsRolling(false)
-  }, [])
+  const startNewGame = () => {
+    setDice(prevDice => 
+      prevDice.map(() => ({
+        id: crypto.randomUUID(),
+        value: Math.ceil(Math.random() * 6),
+        isFrozen: false
+      }))
+    )
+    setGameState({
+      isWon: false,
+      targetValue: null
+    })
+  }
 
   return (
     <div className="app">
       <h1>Tenzies</h1>
+      {gameState.targetValue && (
+        <p className="target-value">
+          Match all dice to {gameState.targetValue}
+        </p>
+      )}
       <div className="dice-container">
         {dice.map(die => (
           <Die
@@ -80,17 +122,27 @@ export function App() {
             value={die.value}
             isFrozen={die.isFrozen}
             isRolling={isRolling}
+            isWinner={gameState.isWon}
             onClick={() => handleDieClick(die.id)}
           />
         ))}
       </div>
       <button 
-        className={`roll-button ${isRolling ? 'rolling' : ''}`} 
-        onClick={rollDice}
+        className={`roll-button ${isRolling ? 'rolling' : ''} ${gameState.isWon ? 'winner' : ''}`}
+        onClick={gameState.isWon ? startNewGame : rollDice}
         disabled={isRolling}
       >
-        {isRolling ? 'Rolling...' : 'Roll'}
+        {gameState.isWon 
+          ? 'New Game' 
+          : isRolling 
+            ? 'Rolling...' 
+            : 'Roll'}
       </button>
+      {gameState.isWon && (
+        <div className="win-message">
+          🎉 Congratulations! You won! 🎉
+        </div>
+      )}
     </div>
   )
 }

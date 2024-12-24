@@ -118,3 +118,38 @@
   0% { transform: rotateY(0deg); }
   100% { transform: rotateY(360deg); }
 }
+
+.target-value {
+  font-size: 1.2rem;
+  color: #4A4E74;
+  margin: 10px 0;
+}
+
+.win-message {
+  font-size: 1.5rem;
+  color: #59E391;
+  margin-top: 20px;
+  font-weight: bold;
+  animation: bounce 0.5s ease infinite alternate;
+}
+
+.die.winner {
+  animation: celebrate 0.5s ease infinite alternate;
+  background-color: #59E391;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(89, 227, 145, 0.5);
+}
+
+.roll-button.winner {
+  background-color: #59E391;
+}
+
+@keyframes celebrate {
+  0% { transform: scale(1.05); }
+  100% { transform: scale(1.1); }
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
