@@ -12,6 +12,7 @@ interface DieState {
 interface GameState {
   isWon: boolean
   targetValue: number | null
+  rollCount: number
 }
 
 export function App() {
@@ -26,7 +27,8 @@ export function App() {
   const [isRolling, setIsRolling] = useState(false)
   const [gameState, setGameState] = useState<GameState>({
     isWon: false,
-    targetValue: null
+    targetValue: null,
+    rollCount: 0
   })
 
   const [windowSize, setWindowSize] = useState({
@@ -86,6 +88,7 @@ export function App() {
     if (isRolling || gameState.isWon) return
 
     setIsRolling(true)
+    setGameState(prev => ({ ...prev, rollCount: prev.rollCount + 1 }))
     
     const rollInterval = setInterval(() => {
       setDice(prevDice =>
@@ -112,7 +115,14 @@ export function App() {
     return () => clearInterval(rollInterval)
   }, [isRolling, gameState.isWon])
 
-  const startNewGame = () => {
+  const resetGame = () => {
+    // Confirm reset if game is in progress
+    if (!gameState.isWon && (gameState.rollCount > 0 || dice.some(die => die.isFrozen))) {
+      if (!window.confirm('Are you sure you want to reset the game?')) {
+        return
+      }
+    }
+
     setDice(prevDice => 
       prevDice.map(() => ({
         id: crypto.randomUUID(),
@@ -122,8 +132,10 @@ export function App() {
     )
     setGameState({
       isWon: false,
-      targetValue: null
+      targetValue: null,
+      rollCount: 0
     })
+    setIsRolling(false)
   }
 
   return (
@@ -143,7 +155,7 @@ export function App() {
               <p>You've won the game!</p>
               <button 
                 className="new-game-button"
-                onClick={startNewGame}
+                onClick={resetGame}
               >
                 Play Again
               </button>
@@ -151,11 +163,25 @@ export function App() {
           </div>
         </>
       )}
-      <h1>Tenzies</h1>
+      <div className="game-header">
+        <h1>Tenzies</h1>
+        <button 
+          className="reset-button"
+          onClick={resetGame}
+          disabled={isRolling}
+        >
+          New Game
+        </button>
+      </div>
       {gameState.targetValue && (
-        <p className="target-value">
-          Match all dice to {gameState.targetValue}
-        </p>
+        <div className="game-info">
+          <p className="target-value">
+            Match all dice to {gameState.targetValue}
+          </p>
+          <p className="roll-count">
+            Rolls: {gameState.rollCount}
+          </p>
+        </div>
       )}
       <div className="dice-container">
         {dice.map(die => (
@@ -171,7 +197,7 @@ export function App() {
       </div>
       <button 
         className={`roll-button ${isRolling ? 'rolling' : ''} ${gameState.isWon ? 'winner' : ''}`}
-        onClick={gameState.isWon ? startNewGame : rollDice}
+        onClick={gameState.isWon ? resetGame : rollDice}
         disabled={isRolling}
       >
         {gameState.isWon 
