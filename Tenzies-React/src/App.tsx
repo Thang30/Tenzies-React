@@ -12,7 +12,6 @@ interface DieState {
 
 interface GameState {
   isWon: boolean
-  targetValue: number | null
   rollCount: number
 }
 
@@ -28,7 +27,6 @@ export function App() {
   const [isRolling, setIsRolling] = useState(false)
   const [gameState, setGameState] = useState<GameState>({
     isWon: false,
-    targetValue: null,
     rollCount: 0
   })
 
@@ -72,18 +70,13 @@ export function App() {
       const clickedDie = prevDice.find(die => die.id === id)
       if (!clickedDie) return prevDice
 
-      // If this is the first frozen die, set it as the target value
-      if (!gameState.targetValue && !clickedDie.isFrozen) {
-        setGameState(prev => ({ ...prev, targetValue: clickedDie.value }))
-      }
-
       return prevDice.map(die => 
         die.id === id 
           ? { ...die, isFrozen: !die.isFrozen }
           : die
       )
     })
-  }, [isRolling, gameState.isWon, gameState.targetValue])
+  }, [isRolling, gameState.isWon])
 
   const rollDice = useCallback(() => {
     if (isRolling || gameState.isWon) return
@@ -133,7 +126,6 @@ export function App() {
     )
     setGameState({
       isWon: false,
-      targetValue: null,
       rollCount: 0
     })
     setIsRolling(false)
@@ -174,16 +166,11 @@ export function App() {
           New Game
         </button>
       </div>
-      {gameState.targetValue && (
-        <div className="game-info">
-          <p className="target-value">
-            Match all dice to {gameState.targetValue}
-          </p>
-          <p className="roll-count">
-            Rolls: {gameState.rollCount}
-          </p>
-        </div>
-      )}
+      <div className="game-info">
+        <p className="roll-count">
+          Rolls: {gameState.rollCount}
+        </p>
+      </div>
       <div className="dice-container">
         {dice.map(die => (
           <Die
