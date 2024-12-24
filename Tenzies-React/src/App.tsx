@@ -10,55 +10,65 @@ interface DieState {
 
 export function App() {
   const [dice, setDice] = useState<DieState[]>(() => {
-    console.log('Initializing dice state...')
     const initialDice = Array.from({ length: 10 }, () => ({
       id: crypto.randomUUID(),
       value: Math.ceil(Math.random() * 6),
       isFrozen: false
     }))
-    console.log('Initial dice:', initialDice)
     return initialDice
   })
   const [isRolling, setIsRolling] = useState(false)
 
+  const generateNewValue = (): number => Math.ceil(Math.random() * 6)
+
   const handleDieClick = useCallback((id: string) => {
     if (isRolling) return
-    setDice(prevDice => {
-      console.log('Freezing die:', id)
-      return prevDice.map(die => 
+    setDice(prevDice => 
+      prevDice.map(die => 
         die.id === id 
           ? { ...die, isFrozen: !die.isFrozen }
           : die
       )
-    })
+    )
   }, [isRolling])
 
   const rollDice = useCallback(() => {
-    console.log('Rolling dice...')
+    if (isRolling) return // Prevent multiple rolls while animation is playing
+
     setIsRolling(true)
     
-    setDice(prevDice => {
-      console.log('Previous dice:', prevDice)
-      const newDice = prevDice.map(die => {
-        if (die.isFrozen) {
-          console.log('Die', die.id, 'is frozen with value:', die.value)
-          return die
-        }
-        const newValue = Math.ceil(Math.random() * 6)
-        console.log('Die', die.id, 'new value:', newValue)
-        return { ...die, value: newValue }
-      })
-      console.log('New dice:', newDice)
-      return newDice
-    })
+    // Create intermediate values for rolling animation
+    const rollInterval = setInterval(() => {
+      setDice(prevDice =>
+        prevDice.map(die =>
+          die.isFrozen
+            ? die
+            : { ...die, value: generateNewValue() }
+        )
+      )
+    }, 50) // Roll animation speed
 
-    setTimeout(() => setIsRolling(false), 500)
-  }, [])
+    // Stop rolling and set final values
+    setTimeout(() => {
+      clearInterval(rollInterval)
+      setDice(prevDice =>
+        prevDice.map(die =>
+          die.isFrozen
+            ? die
+            : { ...die, value: generateNewValue() }
+        )
+      )
+      setIsRolling(false)
+    }, 500) // Total roll duration
 
-  // Debug effect to monitor dice state
+    // Cleanup function
+    return () => clearInterval(rollInterval)
+  }, [isRolling])
+
+  // Cleanup on unmount
   useEffect(() => {
-    console.log('Dice state updated:', dice)
-  }, [dice])
+    return () => setIsRolling(false)
+  }, [])
 
   return (
     <div className="app">
@@ -79,7 +89,7 @@ export function App() {
         onClick={rollDice}
         disabled={isRolling}
       >
-        Roll
+        {isRolling ? 'Rolling...' : 'Roll'}
       </button>
     </div>
   )
